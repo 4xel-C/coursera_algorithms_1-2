@@ -3,5 +3,5 @@ This repository contains all source codes required for the project validation fo
 For this set of lessons, Princeton University provides the students with the **algs4.jar** package to give some life quality improvement on the most used functionnalities. (*user's input, print, randomization...*).
 This package is used for the student to focus on the core aspect of this training: **Algorithms implementation and efficiency**.
 
-# Index of project
+# Index of projects
 - **[Hello](/Hello):** This repository contains very simple programs for the sole purpose of testing coursera grading and submissions process.
