@@ -1,0 +1,31 @@
+import edu.princeton.cs.algs4.StdIn;
+import edu.princeton.cs.algs4.StdRandom;
+
+public class RandomWord {
+	
+	public static void main(String[] args) {
+		
+
+		String input = StdIn.readString();
+		
+		String[] words = input.split(" ");
+		
+		if (words.length == 0) {
+			return;
+		}
+		
+		String champion = "";
+		
+		for(int i = 0; i < words.length; i++) {
+			
+			System.out.println(StdRandom.bernoulli(1/(i+1)));
+			
+			if (StdRandom.bernoulli(1/(i+1))) {
+				champion = words[i];
+			}
+		}
+		
+		System.out.println(champion);
+	}
+
+}

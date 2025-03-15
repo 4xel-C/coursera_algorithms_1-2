@@ -1,0 +1,50 @@
+import edu.princeton.cs.algs4.StdIn;
+import java.util.Scanner;
+import java.io.FileNotFoundException;
+import java.io.File;
+import edu.princeton.cs.algs4.StdRandom;
+
+public class RandomWord {
+	
+	public static void main(String[] args) {
+		
+		String[] words;
+		
+		if (args.length == 0) {
+			String input = StdIn.readString();
+			words = input.split(" ");
+		} else if (args.length == 1) {
+			String file = args[0];
+			
+			try {
+				Scanner scanner = new Scanner(new File(file));
+				while
+			}
+		}
+		
+		
+		
+		
+		
+		
+		if (words.length == 0) {
+			return;
+		}
+		
+		String champion = "";
+		
+		
+		
+		for(int i = 0; i < words.length; i++) {
+			
+			System.out.println(words.length);
+			
+			if (StdRandom.bernoulli(1/(i+1))) {
+				champion = words[i];
+			}
+		}
+		
+		System.out.println(champion);
+	}
+
+}
