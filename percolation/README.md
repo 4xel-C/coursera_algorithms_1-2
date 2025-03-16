@@ -8,6 +8,11 @@ This project simulates a percolation system using a Monte Carlo method to estima
 
 - **PercolationStats**: Runs multiple trials on a percolation system to compute statistical estimates of the percolation threshold.
 
+2 other class are already implement and provide interactive visualization of the problem based on the 2 class described above.
+
+- **PercolationVisualizer**: Allow the user to visualize the percolation problem though a grid detailled in a .txt file (in the txt folder)
+- **InteractivePercolationVisualizer**: Give the user an empty clickable grid to progressivly open the chosen sites, with a view of "full sites" and percolation when reached.
+
 ### Percolation problem
 
 Given a composite systems comprised of randomly distributed insulating and metallic materials: what fraction of the materials need to be metallic so that the composite system is an electrical conductor? Given a porous landscape with water on the surface (or oil below), under what conditions will the water be able to drain through to the bottom (or the oil to gush through to the surface)? Scientists have defined an abstract process known as percolation to model such situations.
@@ -125,11 +130,15 @@ System.out.println("95% confidence interval: [" + stats.confidenceLo() + ", " + 
 
 To compile the code:
 
-`javac -cp ".;./.lift/algs4.jar" Percolation.java PercolationStats.java`
+`javac -cp ".;./.lift/algs4.jar" Percolation.java PercolationStats.java PercolationVisualizer.java InteractivePercolationVisualizer.java`
 
 To run the PercolationStats program:
 
 `java -cp ".;./.lift/algs4.jar" PercolationStats 20 30`
+
+`java -cp ".;./.lift/algs4.jar" PercolationVisualizer txtfile.txt`
+
+`java -cp ".;./.lift/algs4.jar" InteractivePercolationVisualizer`
 
 Here, 20 is the grid size (n), and 30 is the number of trials using the *algs4.jar* package supplied by Princeton.
 
