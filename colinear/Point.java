@@ -59,7 +59,18 @@ public class Point implements Comparable<Point> {
      * @return the slope between this point and the specified point
      */
     public double slopeTo(Point that) {
-        /* YOUR CODE HERE */
+        
+        // degenerate line segment
+        if (this.y - that.y == 0 && this.x - that.x == 0) return Double.NEGATIVE_INFINITY;
+        
+        // Horizontal line segment
+        if (this.y - that.y == 0) return +0.0;
+        
+        // Vertical line segment
+        if (this.x - that.x == 0) return Double.POSITIVE_INFINITY;
+        
+        // return slope if no corner case
+        return (double) (that.y - this.y) / (that.x - this.x);
     }
 
     /**
@@ -74,6 +85,7 @@ public class Point implements Comparable<Point> {
      *         point; and a positive integer if this point is greater than the
      *         argument point
      */
+    @Override
     public int compareTo(Point that) {
         if (this.y < that.y) return -1;
         if (this.y > that.y) return 1;
@@ -89,7 +101,16 @@ public class Point implements Comparable<Point> {
      * @return the Comparator that defines this ordering on points
      */
     public Comparator<Point> slopeOrder() {
-        /* YOUR CODE HERE */
+        
+        return new Comparator<Point>() {
+            
+            @Override
+            public int compare(Point point1, Point point2) {
+                double slope1 = Point.this.slopeTo(point1);
+                double slope2 = Point.this.slopeTo(point2);
+                return Double.compare(slope1, slope2);
+            }
+        };
     }
 
 
@@ -109,6 +130,33 @@ public class Point implements Comparable<Point> {
      * Unit tests the Point data type.
      */
     public static void main(String[] args) {
-        /* YOUR CODE HERE */
+        Point p1 = new Point(1, 2);
+        Point p2 = new Point(2, 4);
+        Point p3 = new Point(1, 5);
+        Point p4 = new Point(1, 2);  
+        Point p5 = new Point(3, 6);
+
+        // slopeTo tests
+        System.out.println("Test slopeTo:");
+        System.out.println("p1 -> p2 = " + p1.slopeTo(p2) + " (Result: 2.0)");
+        System.out.println("p1 -> p3 = " + p1.slopeTo(p3) + " (Result: ∞)");
+        System.out.println("p1 -> p4 = " + p1.slopeTo(p4) + " (Result: -∞)");
+        System.out.println("p1 -> (3,2) = " + p1.slopeTo(new Point(3, 2)) + " (Result: +0.0)");
+        
+        // compareTo tests
+        System.out.println("\nTest compareTo:");
+        System.out.println("p1 compareTo p2 = " + p1.compareTo(p2) + " (Result: <0)");
+        System.out.println("p1 compareTo p4 = " + p1.compareTo(p4) + " (Result: 0)");
+        System.out.println("p2 compareTo p1 = " + p2.compareTo(p1) + " (Result: >0)");
+
+        // slopeOrder tests
+        System.out.println("\nTest slopeOrder:");
+        Comparator<Point> comparator = p1.slopeOrder();
+        System.out.println("p2 vs p5 (same slope): " + comparator.compare(p2, p5) + " (Result: 0)");
+        System.out.println("p3 vs p2: " + comparator.compare(p3, p2) + " (Result: >0)");
+
+        System.out.println("\n✅ Displaying all tests");
     }
+
 }
+
