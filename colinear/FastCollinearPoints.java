@@ -24,7 +24,8 @@ public class FastCollinearPoints {
             // Sort the array according to the concerned point (The point will be minimum of
             // the array (because his slope with himself is -infinite, then sort by
             // coordinates for same slope)
-            Arrays.sort(points, points[i].slopeOrder().thenComparing(Point::compareTo));
+            Arrays.sort(points, points[i].slopeOrder().thenComparing((p1, p2) -> p1.compareTo(p2)));
+            //Arrays.sort(points, points[i].slopeOrder().thenComparing(Point::compareTo));     // Similar way of written the same line
 
             // We only want segment of at least 4 colinear points.
             for (int j = 1; j < n - 2; j++) {
