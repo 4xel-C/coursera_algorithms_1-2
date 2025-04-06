@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdDraw;
@@ -8,52 +9,65 @@ public class BruteCollinearPoints {
 
     private int numberOfSegments = 0;
     private LineSegment[] segments;
-    
-    
+
     public BruteCollinearPoints(Point[] points) {
-        
+
+        if (points == null)
+            throw new IllegalArgumentException("null argument!");
+
         // Number of points
         int n = points.length;
-        
+
+        Point[] copy = new Point[points.length];
+        for (int i = 0; i < points.length; i++) {
+            if (points[i] == null)
+                throw new IllegalArgumentException("null element!");
+            for (int j = 0; j < i; j++)
+                if (points[i] == copy[j])
+                    throw new IllegalArgumentException("No duplicates allowed in the array of points!");
+            copy[i] = points[i];
+        }
+
         // list of the segments
         ArrayList<LineSegment> tempSegments = new ArrayList<>();
-        
+
+        Arrays.sort(copy);
 
         for (int p = 0; p < n; p++) {
             for (int q = p + 1; q < n; q++) {
                 for (int r = q + 1; r < n; r++) {
-                    if (points[p].slopeTo(points[q]) != points[p].slopeTo(points[r])) continue;
-                    
                     for (int s = r + 1; s < n; s++) {
-                        
+
                         // Check if they have the same slope
-                        if (points[p].slopeTo(points[r]) != points[p].slopeTo(points[s])) continue;
-                        
-                        // Add the segment to the segment list
-                        LineSegment segment = new LineSegment(points[p], points[s]);
-                        tempSegments.add(segment);
-                        numberOfSegments++;
+                        if (copy[p].slopeTo(copy[q]) == copy[p].slopeTo(copy[r])
+                                && copy[p].slopeTo(copy[r]) == copy[p].slopeTo(copy[s])) {
+
+                            // Add the segment to the segment list
+                            LineSegment segment = new LineSegment(copy[p], copy[s]);
+                            tempSegments.add(segment);
+                            numberOfSegments++;
+                        }
                     }
-                } 
+                }
             }
         }
-        
+
         // Update the LineSegment array with the correct size;
         segments = new LineSegment[tempSegments.size()];
-        
+
         for (int i = 0; i < tempSegments.size(); i++) {
             segments[i] = tempSegments.get(i);
-        }   
+        }
     }
-    
+
     public int numberOfSegments() {
         return numberOfSegments;
     }
-    
+
     public LineSegment[] segments() {
-        return segments;
+        return segments.clone();
     }
-    
+
     public static void main(String[] args) {
 
         // read the n points from a file
@@ -84,5 +98,5 @@ public class BruteCollinearPoints {
         StdDraw.show();
         System.out.println(collinear.numberOfSegments);
     }
-    
+
 }
