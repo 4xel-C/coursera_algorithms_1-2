@@ -4,4 +4,5 @@
     <fullyQualifiedTypeName name="edu.princeton.cs.algs4.StdIn"/>
     <fullyQualifiedTypeName name="java.util.ArrayList"/>
     <fullyQualifiedTypeName name="java.util.Arrays"/>
+    <fullyQualifiedTypeName name="edu.princeton.cs.algs4.StdRandom"/>
 </qualifiedTypeNameHistroy>
