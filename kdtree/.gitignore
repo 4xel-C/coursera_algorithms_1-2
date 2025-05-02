@@ -3,3 +3,5 @@
 /NearestNeighborVisualizer.class
 /RangeSearchVisualizer.class
 /PointSET.class
+/KdTree.class
+/KdTree$Node.class
