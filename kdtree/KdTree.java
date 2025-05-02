@@ -1,11 +1,13 @@
+import java.util.ArrayList;
+
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
-import edu.princeton.cs.algs4.SET;
+import edu.princeton.cs.algs4.StdDraw;
 
 public class KdTree {
-    
+
     Node root;
-    
+
     /**
      * Inner class representing a node of the kd-tree.
      * 
@@ -15,54 +17,58 @@ public class KdTree {
         double y;
         Point2D point;
         int level; // Dimension to sort the next node: 0 -> x or 1 -> y.
-        
+
         Node parent;
         Node left;
         Node right;
-        
+
         public Node(Point2D point, Node parent) {
             this.x = point.x();
             this.y = point.y();
             this.point = point;
-            if (parent != null)  {
+            if (parent != null) {
                 this.level = (parent.level + 1) % 2;
                 this.parent = parent;
             }
         }
     }
-    
+
     public boolean isEmpty() {
-        if (root == null) return true;
-        return false;        
+        if (root == null)
+            return true;
+        return false;
     }
-    
+
     public int size() {
         return size(root);
     }
-    
+
     private int size(Node node) {
-        if (node == null) return 0;
+        if (node == null)
+            return 0;
         return 1 + size(node.left) + size(node.right);
     }
 
     public void insert(Point2D p) {
         root = insert(p, root, null);
     }
-    
+
     private Node insert(Point2D p, Node node, Node parent) {
-        if (node == null) return new Node(p, parent);
-        
+        if (node == null)
+            return new Node(p, parent);
+
         // If we try to insert a node already in the tree.
-        if (p.equals(node.point)) return node;
-        
+        if (p.equals(node.point))
+            return node;
+
         // if the tree is not null.
         // Check level.
         if (node.level == 0) {
-            
+
             // compare on x basis, tie by y.
             if (p.x() < node.x) {
                 node.left = insert(p, node.left, node);
-            } else if (p.x() > node.x)  {
+            } else if (p.x() > node.x) {
                 node.right = insert(p, node.right, node);
             } else {
                 if (p.y() < node.y) {
@@ -71,11 +77,12 @@ public class KdTree {
                     node.right = insert(p, node.right, node);
                 }
             }
+
         } else if (node.level == 1) {
-         // compare on y basis, tie by x.
+            // compare on y basis, tie by x.
             if (p.y() < node.y) {
                 node.left = insert(p, node.left, node);
-            } else if (p.y() > node.y)  {
+            } else if (p.y() > node.y) {
                 node.right = insert(p, node.right, node);
             } else {
                 if (p.x() < node.x) {
@@ -87,29 +94,145 @@ public class KdTree {
         }
         return node;
     }
-    
+
     public boolean contains(Point2D p) {
         return contains(p, root);
     }
-    
+
     private boolean contains(Point2D p, Node node) {
-        if (node == null) return false;
-        if (node.point.equals(p)) return true;
+        if (node == null)
+            return false;
+        if (node.point.equals(p))
+            return true;
         return contains(p, node.left) || contains(p, node.right);
     }
-    
+
     public void draw() {
         draw(root);
     }
-    
-    private void draw(Node node)  {
-        if (node == null) return;
-        // inorder draw
-        draw(node.left);
+
+    private void draw(Node node) {
+        if (node == null)
+            return;
+        // pre-order draw.
+
+        // Draw the point.
+        StdDraw.setPenColor(StdDraw.BLACK);
         node.point.draw();
+
+        // draw the line depending of the level.
+        if (node.level == 0) {
+
+            // vertical red line
+            StdDraw.setPenColor(StdDraw.RED);
+            if (node.parent == null) {
+                StdDraw.line(node.x, 0, node.x, 0);
+            } else if (node.y < node.parent.y) {
+                StdDraw.line(node.x, 0, node.x, node.parent.y);
+            } else if (node.y > node.parent.y) {
+                StdDraw.line(node.x, node.y, node.x, 1);
+            }
+
+        } else if (node.level == 1) {
+
+            // horizontal line
+            StdDraw.setPenColor(StdDraw.BLUE);
+            if (node.x < node.parent.x) {
+                StdDraw.line(0, node.y, node.parent.x, node.y);
+            } else if (node.y > node.parent.y) {
+                StdDraw.line(node.parent.x, node.y, 0, node.y);
+            }
+        }
+        draw(node.left);
         draw(node.right);
     }
-    
-    
+
+    public Iterable<Point2D> range(RectHV rect) {
+
+        // The array list will store all points in range of the given rectangle.
+        ArrayList<Point2D> result = new ArrayList<>();
+
+        // call the function passing the root and the pointer to the result list to
+        // update the result.
+        range(rect, root, result);
+
+        return result;
+    }
+
+    private void range(RectHV rect, Node node, ArrayList<Point2D> list) {
+
+        if (node == null)
+            return;
+
+        // if the point is in the rectangle, add it to the list.
+        if (rect.contains(node.point))
+            list.add(node.point);
+
+        // Whether the rectangle contains or not the point, check both child to see if
+        // there is other potential points intersecting with the rectangle.
+        // Check the level of the node and compare x or y method.
+        if (node.level == 0) {
+            if (rect.xmin() < node.x)
+                range(rect, node.left, list); // check left node if on the left partition.
+            if (rect.xmax() > node.x)
+                range(rect, node.right, list); // check right node if on the right partition.
+
+        } else if (node.level == 1) {
+            if (rect.ymin() < node.y)
+                range(rect, node.left, list); // check left node if rect on the lower partition.
+            if (rect.ymax() > node.y)
+                range(rect, node.right, list); // check right node if rect on the upper partition.
+        }
+    }
+
+    public Point2D nearest(Point2D p) {
+
+        // Create an array containing only 1 point to pass the pointer to the recursive
+        // function, updating in-place the closest point.
+        Point2D[] closestPointPointer = { null };
+        nearest(p, root, closestPointPointer);
+        return closestPointPointer[0];
+    }
+
+    private void nearest(Point2D p, Node node, Point2D[] pointer) {
+
+        if (node == null)
+            return;
+        if (pointer[0] == null)
+            pointer[0] = p; // initialize with the first point.
+
+        // update the array with the point being closer.
+        if (p.distanceTo(node.point) < p.distanceTo(pointer[0]))
+            pointer[0] = p;
+
+        if (node.level == 0) {
+            if (p.x() < node.x) {
+                nearest(p, node.left, pointer);
+            } else if (p.x() > node.x) {
+                nearest(p, node.right, pointer);
+                // if the point is on the separation line, check both left and right.
+            } else {
+                nearest(p, node.left, pointer);
+                nearest(p, node.right, pointer);
+            }
+
+            // Check level 1 nodes.
+        } else {
+            if (p.y() < node.y) {
+                nearest(p, node.left, pointer);
+            } else if (p.y() > node.y) {
+                nearest(p, node.right, pointer);
+                // if the point is on the separation line, check both left and right.
+            } else {
+                nearest(p, node.left, pointer);
+                nearest(p, node.right, pointer);
+            }
+        }
+    }
+
+    // Testing the class and the methods.
+    public static void main(String[] args) {
+
+    }
 
 }

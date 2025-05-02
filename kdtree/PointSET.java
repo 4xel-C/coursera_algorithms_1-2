@@ -70,4 +70,9 @@ public class PointSET {
 
         return closestPoint;
     }
+
+    // Testing method
+    public static void main(String[] args) {
+
+    }
 }
