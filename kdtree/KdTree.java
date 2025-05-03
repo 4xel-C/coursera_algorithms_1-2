@@ -126,11 +126,11 @@ public class KdTree {
             // vertical red line
             StdDraw.setPenColor(StdDraw.RED);
             if (node.parent == null) {
-                StdDraw.line(node.x, 0, node.x, 0);
+                StdDraw.line(node.x, 0, node.x, 1);
             } else if (node.y < node.parent.y) {
                 StdDraw.line(node.x, 0, node.x, node.parent.y);
             } else if (node.y > node.parent.y) {
-                StdDraw.line(node.x, node.y, node.x, 1);
+                StdDraw.line(node.x, node.parent.y, node.x, 1);
             }
 
         } else if (node.level == 1) {
@@ -139,8 +139,8 @@ public class KdTree {
             StdDraw.setPenColor(StdDraw.BLUE);
             if (node.x < node.parent.x) {
                 StdDraw.line(0, node.y, node.parent.x, node.y);
-            } else if (node.y > node.parent.y) {
-                StdDraw.line(node.parent.x, node.y, 0, node.y);
+            } else if (node.x > node.parent.x) {
+                StdDraw.line(node.parent.x, node.y, 1, node.y);
             }
         }
         draw(node.left);
@@ -189,43 +189,51 @@ public class KdTree {
 
         // Create an array containing only 1 point to pass the pointer to the recursive
         // function, updating in-place the closest point.
+        // Pass the area to recursively subdivise it during the code
         Point2D[] closestPointPointer = { null };
-        nearest(p, root, closestPointPointer);
+        nearest(p, root, closestPointPointer, new RectHV(0, 0, 1, 1));
         return closestPointPointer[0];
     }
 
-    private void nearest(Point2D p, Node node, Point2D[] pointer) {
+    private void nearest(Point2D p, Node node, Point2D[] pointer, RectHV area) {
 
         if (node == null)
             return;
-        if (pointer[0] == null)
-            pointer[0] = p; // initialize with the first point.
 
-        // update the array with the point being closer.
-        if (p.distanceTo(node.point) < p.distanceTo(pointer[0]))
-            pointer[0] = p;
+        // Update the closest point.
+        if (pointer[0] == null || p.distanceTo(node.point) < p.distanceTo(pointer[0]))
+            pointer[0] = node.point; // initialize with the first point.
 
-        if (node.level == 0) {
-            if (p.x() < node.x) {
-                nearest(p, node.left, pointer);
-            } else if (p.x() > node.x) {
-                nearest(p, node.right, pointer);
-                // if the point is on the separation line, check both left and right.
-            } else {
-                nearest(p, node.left, pointer);
-                nearest(p, node.right, pointer);
+        // Subdivise the aera
+        RectHV leftNodeArea = null, rightNodeArea = null;
+
+        if (node.level == 0) { // Vertical split
+            leftNodeArea = new RectHV(area.xmin(), area.ymin(), node.x, area.ymax());
+            rightNodeArea = new RectHV(node.x, area.ymin(), area.xmax(), area.ymax());
+
+        } else if (node.level == 1) { // Horizontal split
+            leftNodeArea = new RectHV(area.xmin(), area.ymin(), area.xmax(), node.y);
+            rightNodeArea = new RectHV(area.xmin(), node.y, area.xmax(), area.ymax());
+        }
+
+        // Explore both left and right starting by the same side of the query point
+  
+        if ((node.level == 0 && p.x() < node.x) || (node.level == 1 && p.y() < node.y)) {
+            nearest(p, node.left, pointer, leftNodeArea);
+
+            // Pruning the right zone if the rectangle if further away than the query point.
+            if (rightNodeArea.distanceTo(p) < p.distanceTo(pointer[0])) {
+                nearest(p, node.right, pointer, rightNodeArea);
             }
 
-            // Check level 1 nodes.
-        } else {
-            if (p.y() < node.y) {
-                nearest(p, node.left, pointer);
-            } else if (p.y() > node.y) {
-                nearest(p, node.right, pointer);
-                // if the point is on the separation line, check both left and right.
-            } else {
-                nearest(p, node.left, pointer);
-                nearest(p, node.right, pointer);
+        } else if ((node.level == 0 && p.x() > node.x) || (node.level == 1 && p.y() > node.y)) {
+
+            // Explore the side containing
+            nearest(p, node.right, pointer, rightNodeArea);
+
+            // Pruning the left zone if the rectangle if further away than the query point.
+            if (leftNodeArea.distanceTo(p) < p.distanceTo(pointer[0])) {
+                nearest(p, node.left, pointer, leftNodeArea);
             }
         }
     }
@@ -233,6 +241,32 @@ public class KdTree {
     // Testing the class and the methods.
     public static void main(String[] args) {
 
+        KdTree tree = new KdTree();
+        System.out.println("Empty? " + tree.isEmpty());
+        tree.insert(new Point2D(0.7, 0.2));
+        tree.insert(new Point2D(0.5, 0.4));
+        tree.insert(new Point2D(0.2, 0.3));
+        tree.insert(new Point2D(0.4, 0.7));
+        tree.insert(new Point2D(0.9, 0.6));
+
+        System.out.println("Empty? " + tree.isEmpty());
+        System.out.println("Size" + tree.size());
+        System.out.println("Contains 0.1 / 0.2? " + tree.contains(new Point2D(0.1, 0.2)));
+
+        Point2D nearest = tree.nearest(new Point2D(0.3, 0.3));
+
+        System.out.println("nearest x: " + nearest.x());
+        System.out.println("nearrest y :" + nearest.y());
+
+        RectHV rect = new RectHV(0.3, 0.3, 0.8, 0.9);
+        ArrayList<Point2D> points = new ArrayList<>();
+        points = (ArrayList<Point2D>) tree.range(rect);
+
+        for (Point2D point : points) {
+            System.out.println(point.x());
+        }
+
+        tree.draw();
     }
 
 }
