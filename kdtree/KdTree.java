@@ -6,13 +6,14 @@ import edu.princeton.cs.algs4.StdDraw;
 
 public class KdTree {
 
-    Node root;
+    private Node root;
+    private int size = 0;
 
     /**
      * Inner class representing a node of the kd-tree.
      * 
      */
-    public class Node {
+    private class Node {
         double x;
         double y;
         Point2D point;
@@ -22,7 +23,7 @@ public class KdTree {
         Node left;
         Node right;
 
-        public Node(Point2D point, Node parent) {
+        Node(Point2D point, Node parent) {
             this.x = point.x();
             this.y = point.y();
             this.point = point;
@@ -34,28 +35,24 @@ public class KdTree {
     }
 
     public boolean isEmpty() {
-        if (root == null)
-            return true;
-        return false;
+        return root == null;
     }
 
     public int size() {
-        return size(root);
-    }
-
-    private int size(Node node) {
-        if (node == null)
-            return 0;
-        return 1 + size(node.left) + size(node.right);
+        return size;
     }
 
     public void insert(Point2D p) {
+        if (p == null)
+            throw new IllegalArgumentException();
         root = insert(p, root, null);
     }
 
     private Node insert(Point2D p, Node node, Node parent) {
-        if (node == null)
+        if (node == null) {
+            size++;
             return new Node(p, parent);
+        }
 
         // If we try to insert a node already in the tree.
         if (p.equals(node.point))
@@ -64,32 +61,26 @@ public class KdTree {
         // if the tree is not null.
         // Check level.
         if (node.level == 0) {
-
-            // compare on x basis, tie by y.
-            if (p.x() < node.x) {
+            if (p.x() < node.x)
                 node.left = insert(p, node.left, node);
-            } else if (p.x() > node.x) {
+            else if (p.x() > node.x)
                 node.right = insert(p, node.right, node);
-            } else {
-                if (p.y() < node.y) {
+            else {
+                if (p.y() < node.y)
                     node.left = insert(p, node.left, node);
-                } else if (p.y() > node.y) {
+                else
                     node.right = insert(p, node.right, node);
-                }
             }
-
-        } else if (node.level == 1) {
-            // compare on y basis, tie by x.
-            if (p.y() < node.y) {
+        } else {
+            if (p.y() < node.y)
                 node.left = insert(p, node.left, node);
-            } else if (p.y() > node.y) {
+            else if (p.y() > node.y)
                 node.right = insert(p, node.right, node);
-            } else {
-                if (p.x() < node.x) {
+            else {
+                if (p.x() < node.x)
                     node.left = insert(p, node.left, node);
-                } else if (p.x() > node.x) {
+                else
                     node.right = insert(p, node.right, node);
-                }
             }
         }
         return node;
@@ -104,7 +95,35 @@ public class KdTree {
             return false;
         if (node.point.equals(p))
             return true;
-        return contains(p, node.left) || contains(p, node.right);
+
+        // search the left or right node depending of the level
+
+        // Vertical line (x comparison)
+        if (node.level == 0) {
+            if (p.x() < node.x)
+                return contains(p, node.left);
+            else if (p.x() > node.x)
+                return contains(p, node.right);
+            else {
+                if (p.y() < node.y)
+                    return contains(p, node.left);
+                else
+                    return contains(p, node.right);
+            }
+
+        } else if (node.level == 1) {
+            if (p.y() < node.y)
+                return contains(p, node.left);
+            else if (p.y() > node.y)
+                return contains(p, node.right);
+            else {
+                if (p.x() < node.x)
+                    return contains(p, node.left);
+                else
+                    return contains(p, node.right);
+            }
+        }
+        return false;
     }
 
     public void draw() {
@@ -148,7 +167,7 @@ public class KdTree {
     }
 
     public Iterable<Point2D> range(RectHV rect) {
-
+        
         // The array list will store all points in range of the given rectangle.
         ArrayList<Point2D> result = new ArrayList<>();
 
@@ -201,7 +220,7 @@ public class KdTree {
             return;
 
         // Update the closest point.
-        if (pointer[0] == null || p.distanceTo(node.point) < p.distanceTo(pointer[0]))
+        if (pointer[0] == null || p.distanceSquaredTo(node.point) < p.distanceSquaredTo(pointer[0]))
             pointer[0] = node.point; // initialize with the first point.
 
         // Subdivise the aera
@@ -217,12 +236,12 @@ public class KdTree {
         }
 
         // Explore both left and right starting by the same side of the query point
-  
+
         if ((node.level == 0 && p.x() < node.x) || (node.level == 1 && p.y() < node.y)) {
             nearest(p, node.left, pointer, leftNodeArea);
 
             // Pruning the right zone if the rectangle if further away than the query point.
-            if (rightNodeArea.distanceTo(p) < p.distanceTo(pointer[0])) {
+            if (rightNodeArea.distanceSquaredTo(p) < p.distanceSquaredTo(pointer[0])) {
                 nearest(p, node.right, pointer, rightNodeArea);
             }
 
@@ -232,41 +251,9 @@ public class KdTree {
             nearest(p, node.right, pointer, rightNodeArea);
 
             // Pruning the left zone if the rectangle if further away than the query point.
-            if (leftNodeArea.distanceTo(p) < p.distanceTo(pointer[0])) {
+            if (leftNodeArea.distanceSquaredTo(p) < p.distanceSquaredTo(pointer[0])) {
                 nearest(p, node.left, pointer, leftNodeArea);
             }
         }
     }
-
-    // Testing the class and the methods.
-    public static void main(String[] args) {
-
-        KdTree tree = new KdTree();
-        System.out.println("Empty? " + tree.isEmpty());
-        tree.insert(new Point2D(0.7, 0.2));
-        tree.insert(new Point2D(0.5, 0.4));
-        tree.insert(new Point2D(0.2, 0.3));
-        tree.insert(new Point2D(0.4, 0.7));
-        tree.insert(new Point2D(0.9, 0.6));
-
-        System.out.println("Empty? " + tree.isEmpty());
-        System.out.println("Size" + tree.size());
-        System.out.println("Contains 0.1 / 0.2? " + tree.contains(new Point2D(0.1, 0.2)));
-
-        Point2D nearest = tree.nearest(new Point2D(0.3, 0.3));
-
-        System.out.println("nearest x: " + nearest.x());
-        System.out.println("nearrest y :" + nearest.y());
-
-        RectHV rect = new RectHV(0.3, 0.3, 0.8, 0.9);
-        ArrayList<Point2D> points = new ArrayList<>();
-        points = (ArrayList<Point2D>) tree.range(rect);
-
-        for (Point2D point : points) {
-            System.out.println(point.x());
-        }
-
-        tree.draw();
-    }
-
 }

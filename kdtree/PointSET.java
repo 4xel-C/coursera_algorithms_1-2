@@ -4,7 +4,7 @@ import edu.princeton.cs.algs4.SET;
 
 public class PointSET {
 
-    SET<Point2D> points;
+    private SET<Point2D> points;
 
     // Constructor method: declare a new empty set of points.
     public PointSET() {
@@ -63,42 +63,12 @@ public class PointSET {
             if (point == p)
                 continue;
 
-            if (p.distanceTo(point) < minDistance) {
+            if (p.distanceSquaredTo(point) < minDistance) {
                 closestPoint = point;
-                minDistance = p.distanceTo(point);
+                minDistance = p.distanceSquaredTo(point);
             }
         }
 
         return closestPoint;
-    }
-
-    // Unit testing
-    public static void main(String[] args) {
-        
-        // Instanciation of a PointSET
-        PointSET set = new PointSET();
-        
-        System.out.println("Empty? " + set.isEmpty());
-        
-        set.insert(new Point2D(0.1, 0.2));
-        set.insert(new Point2D(0.5, 0.5));
-        set.insert(new Point2D(0.7, 0.5));
-        set.insert(new Point2D(0.9, 0.9));
-        
-        System.out.println("Empty? " + set.isEmpty());
-        System.out.println(set.size());
-        
-        Point2D nearest = set.nearest(new Point2D(0.9, 0.87));
-        set.draw();
-        System.out.println(nearest.x());
-        System.out.println(nearest.y());
-        
-        RectHV rect = new RectHV(0.3, 0.3, 0.8, 0.9);
-        SET<Point2D> points = new SET<>();
-        points = (SET<Point2D>) set.range(rect);
-        
-        for (Point2D point : points) {
-            System.out.println(point.x());
-        }
     }
 }
