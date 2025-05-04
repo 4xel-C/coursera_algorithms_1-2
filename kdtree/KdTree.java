@@ -170,15 +170,18 @@ public class KdTree {
         
         // The array list will store all points in range of the given rectangle.
         ArrayList<Point2D> result = new ArrayList<>();
+        
+        // Create the subarea of the node
+        RectHV area = new RectHV(0, 0, 1, 1);
 
         // call the function passing the root and the pointer to the result list to
         // update the result.
-        range(rect, root, result);
+        range(rect, root, area, result);
 
         return result;
     }
 
-    private void range(RectHV rect, Node node, ArrayList<Point2D> list) {
+    private void range(RectHV rect, Node node, RectHV area, ArrayList<Point2D> list) {
 
         if (node == null)
             return;
@@ -186,21 +189,43 @@ public class KdTree {
         // if the point is in the rectangle, add it to the list.
         if (rect.contains(node.point))
             list.add(node.point);
-
-        // Whether the rectangle contains or not the point, check both child to see if
-        // there is other potential points intersecting with the rectangle.
-        // Check the level of the node and compare x or y method.
+        
+        
+        // Generate the two sub areas
+        RectHV leftArea = null;
+        RectHV rightArea = null;
+        
+            // Horizontal split
         if (node.level == 0) {
-            if (rect.xmin() < node.x)
-                range(rect, node.left, list); // check left node if on the left partition.
-            if (rect.xmax() > node.x)
-                range(rect, node.right, list); // check right node if on the right partition.
-
+            leftArea = new RectHV(area.xmin(), area.ymin(), node.x, area.ymax());
+            rightArea = new RectHV(node.x, area.ymin(), area.xmax(), area.ymax());
+            
+            // Check if the query rectangle intersect with the sub areas
+            
+            // If intersection with leftArea, explore left node.
+            if (rect.intersects(leftArea)) {
+                range(rect, node.left, leftArea, list);
+            }
+            
+            // If intersection with rigthArea, explore right node.
+            if (rect.intersects(rightArea)) {
+                range(rect, node.right, rightArea, list);
+            }
+        
+            // Vertical split
         } else if (node.level == 1) {
-            if (rect.ymin() < node.y)
-                range(rect, node.left, list); // check left node if rect on the lower partition.
-            if (rect.ymax() > node.y)
-                range(rect, node.right, list); // check right node if rect on the upper partition.
+            leftArea = new RectHV(area.xmin(), area.ymin(), area.xmax(), node.y);
+            rightArea = new RectHV(area.xmin(), node.y, area.xmax(), area.ymax()); 
+            
+            // If intersection with leftArea, explore left node.
+            if (rect.intersects(leftArea)) {
+                range(rect, node.left, leftArea, list);
+            }
+            
+            // If intersection with rigthArea, explore right node.
+            if (rect.intersects(rightArea)) {
+                range(rect, node.right, rightArea, list);
+            }
         }
     }
 
@@ -223,7 +248,7 @@ public class KdTree {
         if (pointer[0] == null || p.distanceSquaredTo(node.point) < p.distanceSquaredTo(pointer[0]))
             pointer[0] = node.point; // initialize with the first point.
 
-        // Subdivise the aera
+        // Subdivise the area
         RectHV leftNodeArea = null, rightNodeArea = null;
 
         if (node.level == 0) { // Vertical split
@@ -237,23 +262,24 @@ public class KdTree {
 
         // Explore both left and right starting by the same side of the query point
 
+        Node first, second;
+        RectHV firstArea, secondArea;
+
         if ((node.level == 0 && p.x() < node.x) || (node.level == 1 && p.y() < node.y)) {
-            nearest(p, node.left, pointer, leftNodeArea);
+            first = node.left;
+            second = node.right;
+            firstArea = leftNodeArea;
+            secondArea = rightNodeArea;
+        } else {
+            first = node.right;
+            second = node.left;
+            firstArea = rightNodeArea;
+            secondArea = leftNodeArea;
+        }
 
-            // Pruning the right zone if the rectangle if further away than the query point.
-            if (rightNodeArea.distanceSquaredTo(p) < p.distanceSquaredTo(pointer[0])) {
-                nearest(p, node.right, pointer, rightNodeArea);
-            }
-
-        } else if ((node.level == 0 && p.x() > node.x) || (node.level == 1 && p.y() > node.y)) {
-
-            // Explore the side containing
-            nearest(p, node.right, pointer, rightNodeArea);
-
-            // Pruning the left zone if the rectangle if further away than the query point.
-            if (leftNodeArea.distanceSquaredTo(p) < p.distanceSquaredTo(pointer[0])) {
-                nearest(p, node.left, pointer, leftNodeArea);
-            }
+        nearest(p, first, pointer, firstArea);
+        if (secondArea.distanceSquaredTo(p) < p.distanceSquaredTo(pointer[0])) {
+            nearest(p, second, pointer, secondArea);
         }
     }
 }
