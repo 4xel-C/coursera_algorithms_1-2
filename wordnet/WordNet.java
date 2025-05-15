@@ -1,13 +1,109 @@
 import edu.princeton.cs.algs4.Digraph;
+import edu.princeton.cs.algs4.In;
+
+import java.utils.HashMap;
+import java.utils.HashSet;
 
 public class WordNet {
     
     Digraph net;
+    java.util.HashMap<Integer, String> synmap;
     
     // constructor takes the name of the two input files.
     public WordNet(String synsets, String hypernyms) {
         if (synsets == null || hypernyms == null) throw new IllegalArgumentException("constructor arguments cannot be null !");
         
+        String folder = "txt/";
+        
+        In synsetIO = new In(folder + synsets);
+        In hyperIO = new In(folder + hypernyms);
+        
+        // hashmap construction for the synset file.
+        this.synmap = new HashMap<>();
+        
+        while (synsetIO.hasNextLine()) {
+            // line[0] contains the index and line[1] the word.
+            String[] line = synsetIO.readLine().split(",");
+            int index = Integer.parseInt(line[0]);
+            String word = line[1];
+            synmap.put(index, word);
+        } // end while
+        
+        // Consruction of the graph.
+        net = new Digraph(synmap.size());
+        
+        // Create the edges.
+        while (hyperIO.hasNextLine()) {
+            String[] line = hyperIO.readLine().split(",");
+            if (line.length < 2) continue;
+            
+            // Get the tail vertex
+            int tail = Integer.parseInt(line[0]);
+            
+            // For all possible vertex head, create the edge
+            for (int i = 1; i < line.length; i++) {
+                int head = Integer.parseInt(line[i]);
+                net.addEdge(tail, head);
+            }
+        }
+        
+        // Checking the cycle and the single root
+        CycleRootDetection check = new CycleRootDetection(net);
+        if (check.hasCycle() || !check.hasSingleRoot()) throw new IllegalArgumentException("The graph is not a rooted DAG");
+        
+        
+    }
+    
+    // Class to detect cycle and root
+    private class CycleRootDetection {
+        private boolean[] visited;
+        private boolean[] onStack;
+        private java.util.HashSet<Integer> terminalVertices; // Detect all vertex having a outdegree of 0 (no outward pointing edge);
+        private boolean hasCycle;
+        
+        public CycleRootDetection(Digraph graph) {
+            int vertices = graph.V();
+            visited = new boolean[vertices];
+            onStack = new boolean[vertices];
+            terminalVertices = new HashSet<Integer>();
+            hasCycle = false;
+            
+            for (int i = 0; i < vertices; i++) {
+                if (!visited[i]) {
+                    dfs(graph, i);
+                } // end if
+            } // end for
+        }
+        
+        private void dfs(Digraph G, int v) {
+            visited[v] = true;
+            onStack[v] = true;
+            
+            // Check if a terminal vertex
+            if (G.outdegree(v) == 0) terminalVertices.add(v);
+            
+            for (int w : G.adj(v)) {
+                
+                if (!visited[w]) {
+                    dfs(G, w);
+                    
+                } else if (onStack[w]) {
+                    // we found a cycle
+                    hasCycle = true;
+                } // endif             
+                
+            } // endfor
+            
+            onStack[v] = false;
+        }
+        
+        public boolean hasCycle() {
+            return hasCycle;
+        }
+        
+        public boolean hasSingleRoot() {
+            return terminalVertices.size() == 1;
+        }
     }
     
     // returns all WordNet nouns
