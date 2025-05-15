@@ -3,6 +3,7 @@ import edu.princeton.cs.algs4.In;
 
 import java.utils.HashMap;
 import java.utils.HashSet;
+import java.utils.ArrayList;
 
 public class WordNet {
     
@@ -108,12 +109,12 @@ public class WordNet {
     
     // returns all WordNet nouns
     public Iterable<String> nouns(){
-        
+        return synmap.values();
     }
     
     // is the word a WordNet noun?
     public boolean isNoun(String word) {
-        
+        return synmap.containsValue(word);        
     }
     
     // distance between nounA and nounB
