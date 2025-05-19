@@ -6,9 +6,8 @@ import edu.princeton.cs.algs4.StdOut;
 
 public class SAP {
 
-    Digraph graph;
+    private Digraph graph;
 
-    
     public SAP(Digraph G) {
         if (G == null)
             throw new IllegalArgumentException("Null values passed to the constructor!");
@@ -85,6 +84,8 @@ public class SAP {
         validateVertices(v);
         validateVertices(w);
         
+        if (!v.iterator().hasNext() || !w.iterator().hasNext()) return -1;
+        
         // Declare and initialize variables
         int shortestDistance = -1;
         
@@ -114,6 +115,8 @@ public class SAP {
         // Check vertices sets.
         validateVertices(v);
         validateVertices(w);
+        
+        if (!v.iterator().hasNext() || !w.iterator().hasNext()) return -1;
         
         // Declare and initialize variables
         int shortestDistance = -1;
@@ -147,12 +150,17 @@ public class SAP {
     }
 
     private void validateVertices(Iterable<Integer> v) {
+        
+        if (v == null)
+            throw new IllegalArgumentException("Argument is null");
+
         for (Integer vertex : v) {
             if (vertex == null || vertex < 0 || vertex >= graph.V())
                 throw new IllegalArgumentException("One of the vertex is null or out of range");
         }
     }
 
+    
     public static void main(String[] args) {
         In in = new In(args[0]);
         Digraph G = new Digraph(in);
