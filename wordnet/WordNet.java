@@ -1,13 +1,16 @@
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.In;
 
-import java.util.HashMap;
-import java.util.HashSet;
-
 public class WordNet {
 
-    Digraph net;
-    java.util.HashMap<Integer, String> synmap;
+    private Digraph net;
+    private HashMap<Integer, String> synmap;
+    private HashMap<String, Set<Integer>> wordToIndex; // One word may have multiples index
+    private SAP sap;
 
     // constructor takes the name of the two input files.
     public WordNet(String synsets, String hypernyms) {
@@ -19,13 +22,28 @@ public class WordNet {
 
         // hashmap construction for the synset file.
         this.synmap = new HashMap<>();
+        this.wordToIndex = new HashMap<>();
 
         while (synsetIO.hasNextLine()) {
-            // line[0] contains the index and line[1] the word.
+            
+            // line[0] will contain the index and line[1] the complete synset.
             String[] line = synsetIO.readLine().split(",");
             int index = Integer.parseInt(line[0]);
-            String word = line[1];
-            synmap.put(index, word);
+
+            // Separate all words with whitespace.
+            String[] words = line[1].split(" ");
+
+            // Put the complete synset in the hasmap.
+            synmap.put(index, line[1]);
+            
+            // put each individual words into the wordToIndex map.
+            for (String word : words) {
+                if (!wordToIndex.containsKey(word)) {
+                    wordToIndex.put(word, new HashSet<Integer>());
+                }
+                wordToIndex.get(word).add(index); // Add the index to the word.
+            } // end for
+            
         } // end while
 
         // Consruction of the graph.
@@ -52,6 +70,9 @@ public class WordNet {
         if (check.hasCycle() || !check.hasSingleRoot())
             throw new IllegalArgumentException("The graph is not a rooted DAG");
 
+        // Compute the SAP (Shortest Ancestor Path)
+        sap = new SAP(net);
+
     }
 
     // Class to detect cycle and root
@@ -59,7 +80,7 @@ public class WordNet {
         private boolean[] visited;
         private boolean[] onStack;
         private java.util.HashSet<Integer> terminalVertices; // Detect all vertex having a outdegree of 0 (no outward
-                                                             // pointing edge);
+        // pointing edge);
         private boolean hasCycle;
 
         public CycleRootDetection(Digraph graph) {
@@ -110,31 +131,53 @@ public class WordNet {
 
     // returns all WordNet nouns
     public Iterable<String> nouns() {
-        return synmap.values();
+        return wordToIndex.keySet();
     }
 
     // is the word a WordNet noun?
     public boolean isNoun(String word) {
-        return synmap.containsValue(word);
+        return wordToIndex.containsKey(word);
     }
 
     // distance between nounA and nounB
     public int distance(String nounA, String nounB) {
-        if (!isNoun(nounA) || !isNoun(nounB)) throw new IllegalArgumentException("One of the noun is not a wordnet!");
-        return 0;
+        if (!isNoun(nounA) || !isNoun(nounB))
+            throw new IllegalArgumentException(nounA + "/" + nounB + ": One of the noun is not a wordnet!");
+        
+        // get the set of index of each synsets
+        Set<Integer> indexA = new HashSet<>();
+        Set<Integer> indexB = new HashSet<>();
+        
+        // push the index into the HashSets
+        indexA.addAll(wordToIndex.get(nounA));
+        indexB.addAll(wordToIndex.get(nounB));
+
+        return sap.length(indexA, indexB);
     }
 
+    
     // a synset (second field of synsets.txt) that is the common ancestor of nounA
     // and nounB
     // in a shortest ancestral path.
     public String sap(String nounA, String nounB) {
-        if (!isNoun(nounA) || !isNoun(nounB)) throw new IllegalArgumentException("One of the noun is not a wordnet!");
+        if (!isNoun(nounA) || !isNoun(nounB))
+            throw new IllegalArgumentException("One of the noun is not a wordnet!");
+
+        // get the index of each words
+        // get the set of index of each synsets
+        Set<Integer> indexA = new HashSet<>();
+        Set<Integer> indexB = new HashSet<>();
         
-        return "Not implemented";
+        // push the index into the HashSets
+        indexA.addAll(wordToIndex.get(nounA));
+        indexB.addAll(wordToIndex.get(nounB));
+
+        int ancestorIndex = sap.ancestor(indexA, indexB);
+
+        return synmap.get(ancestorIndex);
     }
 
     // unit testing
     public static void main(String[] args) {
-
     }
 }
