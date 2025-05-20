@@ -1,10 +1,8 @@
 INDEX VERSION 1.134+C:\Users\axel-\Desktop\Code\Project\coursera_algorithm\.metadata\.plugins\org.eclipse.jdt.core
-2602712242.index
-2053861868.index
 3789747049.index
 2369484252.index
-1387691055.index
 1865797976.index
+1387691055.index
 1866706089.index
 3991479432.index
 1188516269.index
