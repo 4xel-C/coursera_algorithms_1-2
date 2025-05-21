@@ -9,4 +9,5 @@
     <fullyQualifiedTypeName name="java.util.HashMap"/>
     <fullyQualifiedTypeName name="java.util.HashSet"/>
     <fullyQualifiedTypeName name="edu.princeton.cs.algs4.BreadthFirstDirectedPaths"/>
+    <fullyQualifiedTypeName name="edu.princeton.cs.algs4.EdgeWeightedDigraph"/>
 </qualifiedTypeNameHistroy>
