@@ -6,7 +6,9 @@ public class SeamCarver {
     private Picture picture;
     private int height;
     private int width;
-    private EdgeWeightedDigraph pixelsGraph; // Representation of the picture inside a digraph ? Try other representation of graph with weighed vertex? Try to put the weight on the edges using the vertex values.
+    private double[][] energyGrid;
+    private double[][] verticalDist;   // Compute distance for vertical seam
+    private double[][] horizontalDist;
     
     /**
      * Constructor.
@@ -20,6 +22,20 @@ public class SeamCarver {
         this.picture = new Picture(picture);
         this.height = picture.height();
         this.width = picture.width();
+        this.energyGrid = new double[height][width];
+        
+        // initialize distance matrices
+        verticalDist = new double[height][width];
+        horizontalDist = new double[height][width];
+        
+        // compute the energy of each pixel.
+        for (int x = 0; x < width; x++) {
+            verticalDist[0][x] = 0; // declare the distance of the first line to 0.
+            for (int y = 0; y < height; y++) {
+                horizontalDist[y][0] = 0; // declare the distance of the first column to 0.
+                energyGrid[y][x] = energy(x, y);
+            } // end for
+        } // end for
     }
     
     /**
@@ -27,7 +43,7 @@ public class SeamCarver {
      * @return
      */
     public Picture picture() {
-        return null;
+        return picture;
     }
     
     /**
@@ -35,7 +51,7 @@ public class SeamCarver {
      * @return the width.
      */
     public int width() {
-        return -1;
+        return width;
     }
     
     
@@ -44,7 +60,7 @@ public class SeamCarver {
      * @return height.
      */
     public int height() {
-        return -1;
+        return height;
     }
     
     
@@ -86,6 +102,58 @@ public class SeamCarver {
     }
     
     
+    /**
+     * Sequence of indices for vertical seam.
+     * @return
+     */
+    public int[] findVerticalSeam() {
+        
+        // declare the seamPath
+        int[] seamPath = new int[height];
+        
+        // Start by relaxing all pixels.
+        relaxVertical();
+        
+        // detect the lowest energy cost on the last line and get his x value.
+        double minCost = verticalDist[height - 1][0];
+        int minX = 0;
+        
+        for (int x = 1; x < width; x++) {
+            if (verticalDist[height - 1][x] < minCost) {
+                minCost = verticalDist[height - 1][x];
+                minX = x;
+            }
+        }
+        
+        // update the seamPath.
+        seamPath[height - 1] = minX;
+        
+        // traceback the path line by line until we reach the top of the picture;
+        for (int y = height - 2; y >= 0; y--) {
+            
+            // Check central cost
+            double bestCost = verticalDist[y][minX];  
+            int bestX = minX;
+            
+            // Check left cost
+            if (minX > 0 && verticalDist[y][minX - 1] < bestCost) {
+                bestX = minX - 1;
+                bestCost = verticalDist[y][minX - 1];
+            }
+            
+            // Check right cost
+            if (minX < width - 1 && verticalDist[y][minX + 1] < bestCost) {
+                bestX = minX + 1;
+                bestCost = verticalDist[y][minX + 1];
+            }
+            // Reupdate the minX variable.
+            seamPath[y] = bestX;
+            minX = bestX;
+        }
+        
+        return seamPath;
+    }
+    
     
     /**
      * Sequence of indices for horizontal seam.
@@ -94,23 +162,6 @@ public class SeamCarver {
         return null;
     }
     
-    
-    /**
-     * Sequence of indices for vertical seam.
-     * @return
-     */
-    public int[] findVerticalSeam() {
-        return null;
-    }
-    
-    
-    /**
-     * Remove the horizontal seam from current picture.
-     * @param seam
-     */
-    public void removeHorizontalSeam(int[] seam) {
-        
-    }
     
     
     /**
@@ -121,6 +172,34 @@ public class SeamCarver {
         
     }
     
+    
+    
+    /**
+     * Remove the horizontal seam from current picture.
+     * @param seam
+     */
+    public void removeHorizontalSeam(int[] seam) {
+        
+    }
+ 
+    
+    /**
+     * Method to relax the energy vertically (update vertical dist).
+     */
+    private void relaxVertical() {
+        for (int y = 1; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                
+                // get the minimum cost from previous line
+                double minPrev = verticalDist[y - 1][x];
+                if (x > 0) minPrev = Math.min(minPrev, verticalDist[y - 1][x - 1]);
+                if (x < width - 1) minPrev = Math.min(minPrev, verticalDist[y - 1][x + 1]);
+                verticalDist[y][x] = energyGrid[y][x] + minPrev;
+            } 
+        }
+    }
+    
+   
     
     /**
      * Unit testing.
