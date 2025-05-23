@@ -159,6 +159,50 @@ public class SeamCarver {
      * Sequence of indices for horizontal seam.
      */
     public int[] findHorizontalSeam() {
+        // declare the seamPath
+        int[] seamPath = new int[height];
+        
+        // Start by relaxing all pixels.
+        relaxHorizontal();
+        
+//        // detect the lowest energy cost on the last line and get his x value.
+//        double minCost = verticalDist[height - 1][0];
+//        int minX = 0;
+//        
+//        for (int x = 1; x < width; x++) {
+//            if (verticalDist[height - 1][x] < minCost) {
+//                minCost = verticalDist[height - 1][x];
+//                minX = x;
+//            }
+//        }
+//        
+//        // update the seamPath.
+//        seamPath[height - 1] = minX;
+//        
+//        // traceback the path line by line until we reach the top of the picture;
+//        for (int y = height - 2; y >= 0; y--) {
+//            
+//            // Check central cost
+//            double bestCost = verticalDist[y][minX];  
+//            int bestX = minX;
+//            
+//            // Check left cost
+//            if (minX > 0 && verticalDist[y][minX - 1] < bestCost) {
+//                bestX = minX - 1;
+//                bestCost = verticalDist[y][minX - 1];
+//            }
+//            
+//            // Check right cost
+//            if (minX < width - 1 && verticalDist[y][minX + 1] < bestCost) {
+//                bestX = minX + 1;
+//                bestCost = verticalDist[y][minX + 1];
+//            }
+//            // Reupdate the minX variable.
+//            seamPath[y] = bestX;
+//            minX = bestX;
+//        }
+//        
+//        return seamPath;
         return null;
     }
     
@@ -199,6 +243,22 @@ public class SeamCarver {
         }
     }
     
+    
+    /**
+     * Method to relax the energy horizontally (update vertical dist).
+     */
+    private void relaxHorizontal() {
+        for (int x = 1; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                
+                // get the minimum cost from previous column
+                double minPrev = verticalDist[y][x - 1];
+                if (y > 0) minPrev = Math.min(minPrev, verticalDist[y - 1][x - 1]);
+                if (y < height - 1) minPrev = Math.min(minPrev, verticalDist[y + 1][x - 1]);
+                verticalDist[y][x] = energyGrid[y][x] + minPrev;
+            } 
+        }
+    }
    
     
     /**
