@@ -11,6 +11,7 @@ This package is used for the student to focus on the core aspect of this trainin
 - **[8puzzle](/8puzzle/)**: Use of Min Priority Queue data structure to implement the **A\* search** algorithm with manhattan distances heuristic to efficiently bring a solution to the puzzle.
 - **[K-D Tree](/kdtree/)**: Use of kd Tree to efficiently implement *Range Search* and *Nearest Neighbor* algorithms on a 2D space.
 - **[Wordnet](/wordnet/)**: Use of directed graph to compute wordnet from txt files and calculate distances on words.
+- **[Seam](/seam/)**: An implementation of the resizing algorithm using a dynamic programming implementation of shortest path algorithm to find the lowest energy path through the pixels to remove.
 
 # Note on project's structures
 All the source code have been build fin the *default package* accoring to the recommendation of the training program. This have been made to facilitate the grading/submission system.
