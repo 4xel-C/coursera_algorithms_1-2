@@ -7,9 +7,8 @@ public class SeamCarver {
     private Picture picture;
     private int height;
     private int width;
-    private double[][] energyGrid;
-    private double[][] verticalDist; // Compute distance for vertical seam
-    private double[][] horizontalDist;
+    private Color[][] colors; // Caching the colors of the picture.
+    private double[][] energyMatrix;
 
     /**
      * Constructor.
@@ -25,16 +24,21 @@ public class SeamCarver {
         this.picture = new Picture(picture);
         this.height = picture.height();
         this.width = picture.width();
-        this.energyGrid = new double[height][width];
+        this.colors = new Color[height][width];
+        this.energyMatrix = new double[height][width];
 
-        // initialize distance matrices
-        verticalDist = new double[height][width];
-        horizontalDist = new double[height][width];
-
-        // compute the energy of each pixel.
+        // compute the color of each pixel.
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                energyGrid[y][x] = energy(x, y);
+                colors[y][x] = picture.get(x, y); // caching the colors.
+            } // end for
+        } // end for
+
+        // compute the energy matrix
+        // compute the color of each pixel.
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                energyMatrix[y][x] = energy(x, y); 
             } // end for
         } // end for
     }
@@ -86,11 +90,12 @@ public class SeamCarver {
         if (y == 0 || y == height - 1)
             return 1000;
 
-        // Get the ARGB value of the pixel on left, right, top and bottom.
-        Color rgbLeft = picture.get(x - 1, y);
-        Color rgbRight = picture.get(x + 1, y);
-        Color rgbTop = picture.get(x, y - 1);
-        Color rgbBottom = picture.get(x, y + 1);
+        // Get the ARGB value of the pixel on left, right, top and bottom using the
+        // grid.
+        Color rgbLeft = colors[y][x - 1];
+        Color rgbRight = colors[y][x + 1];
+        Color rgbTop = colors[y - 1][x];
+        Color rgbBottom = colors[y + 1][x];
 
         // Calculate central differences for each color : Red, Green and Blue.
         int rx = rgbRight.getRed() - rgbLeft.getRed();
@@ -113,50 +118,50 @@ public class SeamCarver {
      */
     public int[] findVerticalSeam() {
 
-        // declare the seamPath
-        int[] seamPath = new int[height];
+        double[][] distTo = new double[height][width];
+        int[][] edgeTo = new int[height][width];
 
-        // Start by relaxing all pixels.
-        relaxVertical();
+        // Initialize the first line
+        for (int x = 0; x < width; x++) {
+            distTo[0][x] = energyMatrix[0][x];
+        }
 
-        // detect the lowest energy cost on the last line and get his x value.
-        double minCost = verticalDist[height - 1][0];
+        // iterate throughout each line to relax the distances.
+        for (int y = 1; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                distTo[y][x] = Double.POSITIVE_INFINITY;
+                for (int dx = -1; dx <= 1; dx++) {
+                    int prevX = x + dx;
+                    if (prevX >= 0 && prevX < width) {
+                        if (distTo[y - 1][prevX] + energyMatrix[y][x] < distTo[y][x]) {
+                            distTo[y][x] = distTo[y -1][prevX] + energyMatrix[y][x];
+                            edgeTo[y][x] = prevX;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Find the seamPath by finding the minimum distance of the last line
+        double minDist = Double.POSITIVE_INFINITY;
         int minX = 0;
-
-        for (int x = 1; x < width; x++) {
-            if (verticalDist[height - 1][x] < minCost) {
-                minCost = verticalDist[height - 1][x];
+        for (int x = 0; x < width; x++) {
+            if (distTo[height - 1][x] < minDist) {
+                minDist = distTo[height - 1][x];
                 minX = x;
             }
         }
 
-        // update the seamPath.
-        seamPath[height - 1] = minX;
+        // Retrieve the seam using the edgeTo matrix.
+        int[] seam = new int[height];
 
-        // traceback the path line by line until we reach the top of the picture;
-        for (int y = height - 2; y >= 0; y--) {
+        // Minimum distance of the last step.
+        seam[height - 1] = minX;
 
-            // Check central cost
-            double bestCost = verticalDist[y][minX];
-            int bestX = minX;
-
-            // Check left cost
-            if (minX > 0 && verticalDist[y][minX - 1] < bestCost) {
-                bestX = minX - 1;
-                bestCost = verticalDist[y][minX - 1];
-            }
-
-            // Check right cost
-            if (minX < width - 1 && verticalDist[y][minX + 1] < bestCost) {
-                bestX = minX + 1;
-                bestCost = verticalDist[y][minX + 1];
-            }
-            // Reupdate the minX variable.
-            seamPath[y] = bestX;
-            minX = bestX;
+        for (int y = height - 1; y > 0; y--) {
+            seam[y - 1] = edgeTo[y][seam[y]];
         }
-
-        return seamPath;
+        return seam;
     }
 
     /**
@@ -164,52 +169,50 @@ public class SeamCarver {
      */
     public int[] findHorizontalSeam() {
 
-        // declare the seamPath
-        int[] seamPath = new int[width];
+        double[][] distTo = new double[height][width];
+        int[][] edgeTo = new int[height][width];
 
-        // Start by relaxing all pixels.
-        relaxHorizontal();
+        // Initialize the first column
+        for (int y = 0; y < height; y++) {
+            distTo[y][0] = energyMatrix[y][0];
+        }
 
-        // detect the lowest energy cost on the previous column and get his y value.
-        double minCost = horizontalDist[0][width - 1];
+        // iterate throughout each column to relax the distances.
+        for (int x = 1; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                distTo[y][x] = Double.POSITIVE_INFINITY;
+                for (int dy = -1; dy <= 1; dy++) {
+                    int prevY = y + dy;
+                    if (prevY >= 0 && prevY < height) {
+                        if (distTo[prevY][x - 1] + energyMatrix[y][x] < distTo[y][x]) {
+                            distTo[y][x] = distTo[prevY][x - 1] + energyMatrix[y][x];
+                            edgeTo[y][x] = prevY;
+                        }
+                    }
+                }
+            }
+        }
 
+        // Find the seamPath by finding the minimum distance of the last column
+        double minDist = Double.POSITIVE_INFINITY;
         int minY = 0;
-
-        // Scan the last column to search the lowest energy pixel distance.
-        for (int y = 1; y < height; y++) {
-            if (horizontalDist[y][width - 1] < minCost) {
-                minCost = horizontalDist[y][width - 1];
+        for (int y = 0; y < height; y++) {
+            if (distTo[y][width - 1] < minDist) {
+                minDist = distTo[y][width - 1];
                 minY = y;
             }
         }
 
-        // update the seamPath.
-        seamPath[width - 1] = minY;
+        // Retrieve the seam using the edgeTo matrix.
+        int[] seam = new int[width];
 
-        // traceback the path column by column until we reach the left of the picture;
-        for (int x = width - 2; x >= 0; x--) {
+        // Minimum distance of the last step.
+        seam[width - 1] = minY;
 
-            // Check central cost
-            double bestCost = horizontalDist[minY][x];
-            int bestY = minY;
-
-            // Check left cost
-            if (minY > 0 && horizontalDist[minY - 1][x] < bestCost) {
-                bestY = minY - 1;
-                bestCost = horizontalDist[minY - 1][x];
-            }
-
-            // Check right cost
-            if (minY < height - 1 && horizontalDist[minY + 1][x] < bestCost) {
-                bestY = minY + 1;
-                bestCost = horizontalDist[minY + 1][x];
-            }
-            // Reupdate the minX variable.
-            seamPath[x] = bestY;
-            minY = bestY;
+        for (int x = width - 1; x > 0; x--) {
+            seam[x - 1] = edgeTo[seam[x]][x];
         }
-
-        return seamPath;
+        return seam;
     }
 
     /**
@@ -234,41 +237,36 @@ public class SeamCarver {
                 throw new IllegalArgumentException("Seam not contiguous!");
         }
 
-        // Update the width.
-        this.width -= 1;
-
-        // Create a new picture.
-        Picture resizedPicture = new Picture(width, height);
-
-        // Deletion increment.
-        int offset = 0;
-
-        // Iterate through each pixel of the picture.
+        // for each line shift the colors of the pixel to the left in the colors matrix and the energy Matrix to overwrite the seam.
         for (int y = 0; y < height; y++) {
-            offset = 0;
-
-            for (int x = 0; x < width; x++) {
-
-                // increment the offset counter to ignore the seam for the picture's pixel and
-                // energy report.
-                if (x == seam[y])
-                    offset++;
-
-                Color color = picture.get(x + offset, y);
-                resizedPicture.set(x, y, color);
+            int seamx = seam[y];
+            for (int x = seamx; x < width-1; x++) {
+                colors[y][x] = colors[y][x+1];
+                energyMatrix[y][x] = energyMatrix[y][x+1];
             }
         }
-
-        // Rebuild energy and distances matrices.
-        this.energyGrid = new double[height][width];
-        this.verticalDist = new double[height][width];
-        this.horizontalDist = new double[height][width];
-        this.picture = resizedPicture;
-
-        // Recompute energy.
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                this.energyGrid[y][x] = energy(x, y);
+        
+        // reduce the width
+        this.width--;
+        
+        // Update the energyMatrix for the pixel that was before the deleted seam, and the cell that was after the seam (now shifted to the seam X value).
+        for (int y = 0; y < height; y++) {
+            int seamx = seam[y];
+            
+            // update the energy value
+            for (int dx = -1; dx < 1; dx++) {
+                if ((seamx + dx) >= 0 && (seamx + dx < width)) {
+                    energyMatrix[y][seamx + dx] = energy(seamx + dx, y);    
+                }
+            }
+        }
+        
+        // update the picture
+        this.picture = new Picture(width, height);
+        
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                this.picture.set(x,  y, colors[y][x]);
             }
         }
     }
@@ -294,90 +292,87 @@ public class SeamCarver {
                 throw new IllegalArgumentException("Seam not contiguous!");
         }
 
-        // Update the height.
-        this.height -= 1;
-
-        // Create a new picture.
-        Picture resizedPicture = new Picture(width, height);
-
-        // Deletion increment.
-        int offset = 0;
-
-        // Iterate through each pixel of the picture.
+        // for each column shift the colors of the pixel and its energy toward the top in the colors matrix to overwrite the seam.
         for (int x = 0; x < width; x++) {
-            offset = 0;
-
-            for (int y = 0; y < height; y++) {
-
-                // increment the offset counter to ignore the seam for the picture's pixel and
-                // energy report.
-                if (y == seam[x])
-                    offset++;
-
-                Color color = picture.get(x, y + offset);
-                resizedPicture.set(x, y, color);
+            int seamy = seam[x];
+            for (int y = seamy; y < height-1; y++) {
+                colors[y][x] = colors[y+1][x];
+                energyMatrix[y][x] = energyMatrix[y+1][x];
             }
         }
-
-        // Rebuild energy and distances matrices.
-        this.energyGrid = new double[height][width];
-        this.verticalDist = new double[height][width];
-        this.horizontalDist = new double[height][width];
-        this.picture = resizedPicture;
-
-        // Recompute energy.
+        
+        // reduce the height
+        this.height--;
+        
+        // Update the energyMatrix for the pixel impacted by the deletion of the seam. (-1 and seamy value)
         for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                this.energyGrid[y][x] = energy(x, y);
+            int seamy = seam[x];
+            for (int dy = -1; dy < 1; dy++) {
+                if ((seamy + dy) >= 0 && (seamy + dy < height)) {
+                    energyMatrix[seamy + dy][x] = energy(x, seamy + dy);    
+                }
             }
         }
-    }
-
-    /**
-     * Method to relax the energy vertically (update vertical dist).
-     */
-    private void relaxVertical() {
-
-        // Initialize the first line with the energy.
-        for (int x = 0; x < width; x++) {
-            verticalDist[0][x] = energyGrid[0][x];
-        }
-
-        for (int y = 1; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-
-                // get the minimum cost from previous line
-                double minPrev = verticalDist[y - 1][x];
-                if (x > 0)
-                    minPrev = Math.min(minPrev, verticalDist[y - 1][x - 1]);
-                if (x < width - 1)
-                    minPrev = Math.min(minPrev, verticalDist[y - 1][x + 1]);
-                verticalDist[y][x] = energyGrid[y][x] + minPrev;
-            }
-        }
-    }
-
-    /**
-     * Method to relax the energy horizontally (update vertical dist).
-     */
-    private void relaxHorizontal() {
-
-        // Initialize the first column with the energy.
+        
+        // update the picture
+        this.picture = new Picture(width, height);
+        
         for (int y = 0; y < height; y++) {
-            horizontalDist[y][0] = energyGrid[y][0];
-        }
-
-        for (int x = 1; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-
-                // get the minimum cost from previous column
-                double minPrev = horizontalDist[y][x - 1];
-                if (y > 0)
-                    minPrev = Math.min(minPrev, horizontalDist[y - 1][x - 1]);
-                if (y < height - 1)
-                    minPrev = Math.min(minPrev, horizontalDist[y + 1][x - 1]);
-                horizontalDist[y][x] = energyGrid[y][x] + minPrev;
+            for (int x = 0; x < width; x++) {
+                this.picture.set(x,  y, colors[y][x]);
             }
         }
+    }
+
+    public static void main(String[] args) {
+        String file = "png/10x10.png";
+        Picture picture = new Picture(file);
+
+        SeamCarver carver = new SeamCarver(picture);
+
+        // -------------------------------------------Print energy matrix
+        for (int y = 0; y < carver.height; y++) {
+            System.out.println();
+            for (int i = 0; i < carver.width; i++) {
+
+                System.out.print("----------");
+            }
+            System.out.println();
+            for (int x = 0; x < carver.width; x++) {
+                String line = " | " + String.format("%.2f", carver.energy(x, y));
+                System.out.print(String.format("%-10s", line));
+            }
+        }
+        System.out.println();
+        // ------------------------------------------
+        System.out.println();
+        
+        
+        
+        int[] verticalSeam = carver.findVerticalSeam();
+
+        for (int i = 0; i < verticalSeam.length; i++) {
+            System.out.println("y = " + i + "->" + verticalSeam[i]);
+        }
+        
+        carver.removeVerticalSeam(verticalSeam);
+        
+        // -------------------------------------------Print energy matrix
+        for (int y = 0; y < carver.height; y++) {
+            System.out.println();
+            for (int i = 0; i < carver.width; i++) {
+
+                System.out.print("----------");
+            }
+            System.out.println();
+            for (int x = 0; x < carver.width; x++) {
+                String line = " | " + String.format("%.2f", carver.energy(x, y));
+                System.out.print(String.format("%-10s", line));
+            }
+        }
+        System.out.println();
+        // ------------------------------------------
+        System.out.println();
+
     }
 }
