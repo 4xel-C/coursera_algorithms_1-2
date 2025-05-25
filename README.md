@@ -14,4 +14,4 @@ This package is used for the student to focus on the core aspect of this trainin
 - **[Seam](/seam/)**: An implementation of the resizing algorithm using a dynamic programming implementation of shortest path algorithm to find the lowest energy path through the pixels to remove.
 
 # Note on project's structures
-All the source code have been build fin the *default package* accoring to the recommendation of the training program. This have been made to facilitate the grading/submission system.
+All the source code have been build inside the *default package* accoring to the recommendation of the training program. This have been made to facilitate the grading/submission system.
