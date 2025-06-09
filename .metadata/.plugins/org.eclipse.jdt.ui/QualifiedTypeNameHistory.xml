@@ -4,10 +4,12 @@
     <fullyQualifiedTypeName name="edu.princeton.cs.algs4.StdIn"/>
     <fullyQualifiedTypeName name="java.util.Arrays"/>
     <fullyQualifiedTypeName name="edu.princeton.cs.algs4.StdRandom"/>
-    <fullyQualifiedTypeName name="java.util.ArrayList"/>
     <fullyQualifiedTypeName name="edu.princeton.cs.algs4.In"/>
-    <fullyQualifiedTypeName name="java.util.HashMap"/>
     <fullyQualifiedTypeName name="java.util.HashSet"/>
     <fullyQualifiedTypeName name="edu.princeton.cs.algs4.BreadthFirstDirectedPaths"/>
     <fullyQualifiedTypeName name="edu.princeton.cs.algs4.EdgeWeightedDigraph"/>
+    <fullyQualifiedTypeName name="java.util.ArrayList"/>
+    <fullyQualifiedTypeName name="java.util.HashMap"/>
+    <fullyQualifiedTypeName name="edu.princeton.cs.algs4.FlowNetwork"/>
+    <fullyQualifiedTypeName name="edu.princeton.cs.algs4.FordFulkerson"/>
 </qualifiedTypeNameHistroy>
