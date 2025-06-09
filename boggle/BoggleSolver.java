@@ -85,15 +85,17 @@ public class BoggleSolver {
     }
 
     public int scoreOf(String word) {
+        if (!dictionaryTrie.containsWord(word)) return 0;
         int len = word.length();
-
-        if (len < 5)
+ 
+        if (len < 3) return 0;
+        else if (len < 5)
             return 1;
-        if (len == 5)
+        else if (len == 5)
             return 2;
-        if (len == 6)
+        else if (len == 6)
             return 3;
-        if (len == 7)
+        else if (len == 7)
             return 5;
         else
             return 11;
