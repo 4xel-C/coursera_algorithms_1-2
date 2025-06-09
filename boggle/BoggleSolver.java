@@ -1,18 +1,17 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.SET;
 import edu.princeton.cs.algs4.StdOut;
-import edu.princeton.cs.algs4.TrieSET;
 
 public class BoggleSolver {
 
-    private final TrieSET dictionarySet;
+    private final WordTrie dictionaryTrie;
 
     public BoggleSolver(String[] dictionary) {
-        this.dictionarySet = new TrieSET();
+        this.dictionaryTrie = new WordTrie();
 
-        // add all the words into a trie for search.
+        // add all the words into a custom trie for search.
         for (String word : dictionary) {
-            this.dictionarySet.add(word);
+            this.dictionaryTrie.add(word);
         }
     }
 
@@ -56,13 +55,13 @@ public class BoggleSolver {
         }
 
         // base case: if the current 'newPrefix' is not the prefix of any words in the
-        // dictionary, return null.
-        if (!dictionarySet.keysWithPrefix(newPrefix).iterator().hasNext()) {
+        // dictionary, return and stop the recursion.
+        if (!dictionaryTrie.containsPrefix(newPrefix)) {
             return;
         }
 
         // Check if the dictionary (trie) contains the new prefix and the word is > 3.
-        if (newPrefix.length() > 2 && dictionarySet.contains(newPrefix))
+        if (newPrefix.length() > 2 && dictionaryTrie.containsWord(newPrefix))
             validWords.add(newPrefix);
 
         // mark the cell as visited.
