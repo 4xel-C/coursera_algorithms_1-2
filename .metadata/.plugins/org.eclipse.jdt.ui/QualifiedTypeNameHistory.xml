@@ -2,7 +2,6 @@
 <qualifiedTypeNameHistroy>
     <fullyQualifiedTypeName name="java.lang.System"/>
     <fullyQualifiedTypeName name="edu.princeton.cs.algs4.StdIn"/>
-    <fullyQualifiedTypeName name="java.util.Arrays"/>
     <fullyQualifiedTypeName name="edu.princeton.cs.algs4.StdRandom"/>
     <fullyQualifiedTypeName name="edu.princeton.cs.algs4.In"/>
     <fullyQualifiedTypeName name="java.util.HashSet"/>
@@ -14,4 +13,6 @@
     <fullyQualifiedTypeName name="edu.princeton.cs.algs4.TrieST"/>
     <fullyQualifiedTypeName name="java.util.ArrayList"/>
     <fullyQualifiedTypeName name="edu.princeton.cs.algs4.SET"/>
+    <fullyQualifiedTypeName name="edu.princeton.cs.algs4.BinaryStdOut"/>
+    <fullyQualifiedTypeName name="java.util.Arrays"/>
 </qualifiedTypeNameHistroy>
