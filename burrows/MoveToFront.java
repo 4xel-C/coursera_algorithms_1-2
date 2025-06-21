@@ -34,7 +34,8 @@ public class MoveToFront {
                 } // end if.
             } // end for.
         } // end while.
-        return;
+        BinaryStdIn.close();
+        BinaryStdOut.close();
     }
     
     public static void decode() {
@@ -62,6 +63,7 @@ public class MoveToFront {
         }
         
         // close the Binarywriter.
+        BinaryStdIn.close();
         BinaryStdOut.close();
     }
     

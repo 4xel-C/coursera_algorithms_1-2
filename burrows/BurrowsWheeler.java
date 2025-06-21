@@ -4,7 +4,6 @@ import edu.princeton.cs.algs4.Queue;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 
 public class BurrowsWheeler {
@@ -111,6 +110,15 @@ public class BurrowsWheeler {
     }
     
     public static void main(String[] args) {
+        if (args.length == 0) {
+            throw new IllegalArgumentException("Usage: BurrowsWheeler - (for transform) or + (for inverse transform)");
+        }
+        if (args[0].equals("-")) {
+            transform();
+        } else if (args[0].equals("+")) {
+            inverseTransform();
+        } else {
+            throw new IllegalArgumentException("First argument must be - or +");
+        }
     }
-
 }

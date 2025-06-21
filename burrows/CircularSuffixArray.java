@@ -4,11 +4,9 @@ public class CircularSuffixArray {
 
     private final int n;
     private final Integer[] index;
-    private final String s;
 
     public CircularSuffixArray(String s) {
         if (s == null) throw new IllegalArgumentException("Input string is null.");
-        this.s = s;
         this.n = s.length();
         this.index = new Integer[n];
 

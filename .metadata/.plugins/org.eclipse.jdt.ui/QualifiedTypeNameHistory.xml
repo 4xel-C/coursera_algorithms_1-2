@@ -14,5 +14,6 @@
     <fullyQualifiedTypeName name="java.util.ArrayList"/>
     <fullyQualifiedTypeName name="edu.princeton.cs.algs4.SET"/>
     <fullyQualifiedTypeName name="edu.princeton.cs.algs4.BinaryStdOut"/>
+    <fullyQualifiedTypeName name="edu.princeton.cs.algs4.BinaryStdIn"/>
     <fullyQualifiedTypeName name="java.util.Arrays"/>
 </qualifiedTypeNameHistroy>
