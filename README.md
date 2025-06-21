@@ -12,6 +12,10 @@ This package is used for the student to focus on the core aspect of this trainin
 - **[K-D Tree](/kdtree/)**: Use of kd Tree to efficiently implement *Range Search* and *Nearest Neighbor* algorithms on a 2D space.
 - **[Wordnet](/wordnet/)**: Use of directed graph to compute wordnet from txt files and calculate distances on words.
 - **[Seam](/seam/)**: An implementation of the resizing algorithm using a dynamic programming implementation of shortest path algorithm to find the lowest energy path through the pixels to remove.
+- **[baseball](/baseball/)**: Solvingthe baseball elimination problem using max flows algorithms.
+- **[boggle](/boggle/)**: An implementation of a solver for boggle games using tries combined to DFS to efficiently compute the possible words.
+- **[burrows](/burrows/)**: An implementation of the Burrows-Wheeler transformation used in the *bzip2* compression algorithms.
+
 
 # Note on project's structures
 All the source code have been build inside the *default package* accoring to the recommendation of the training program. This have been made to facilitate the grading/submission system.
